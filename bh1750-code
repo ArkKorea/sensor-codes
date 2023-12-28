@@ -1,0 +1,42 @@
+import smbus2 #i2c 프로토콜 사용을 위한 라이브러리 smbus2는 python only
+import threading
+import time
+
+#사용할 i2c 주소
+I2C_CH = 1
+#BH1750의 주소롤 센서의 default값
+BH1750_DEV_ADDR = 0x23
+'''
+ 측정 모드들
+ https://blog.naver.com/chandong83/221602405432
+ 참고
+'''
+CONT_H_RES_MODE     = 0x10  # 1lx 해상도, 측정시간 120ms, 계속 측정
+CONT_H_RES_MODE2    = 0x11  # 0.5lx 해상도 측정시간 120ms, 계속 측정
+CONT_L_RES_MODE     = 0x13  # 4lx 해상도 측정시간 16ms, 계속 측정
+ONETIME_H_RES_MODE  = 0x20  # 1lx 해상도 측정시간 120ms, 측정 후 절전
+ONETIME_H_RES_MODE2 = 0x21  # 0.5lx 해상도 측정시간 120mx, 측정 후 절전
+ONETIME_L_RES_MODE  = 0x23  # 4lx 해상도 측정시간 16ms, 측정 후 절전
+
+# 밝기를 측정하고 2바이트 값은 int로 바꾸어 반환하는 함수
+def readLux() :
+    #사용할 I2C 라이브러리 생성
+    i2c = smbus2.SMBus(I2C_CH)
+    #측정모드를 CONT_H_RES_MODE로 2바이트씩 읽어오기
+    luxBytes = i2c.read_i2c_block_data(BH1750_DEV_ADDR, CONT_H_RES_MODE, 2)
+    #바이트를 int로 변환
+    lux = int.from_bytes(luxBytes, byteorder='big')
+    i2c.close()
+    return lux
+
+# 1초 간격으로 반환한 밝기를 출력하는 함수
+def luxPrint() :
+    while True :
+        print('{0} lux'.format(readLux()))
+        time.sleep(1)
+
+if __name__ == '__main__' :
+    thd = threading.Thread(target = readLux, daemon=True) #스레드 생성
+    thd.start() #스레드 실행
+    input()
+    print("Done") # 엔터키 입력 시 Done 출력과 함께 스레드 종료
