@@ -4,7 +4,7 @@ import time
 
 #사용할 i2c 주소
 I2C_CH = 1
-#BH1750의 주소롤 센서의 default값
+#BH1750의 주소, 센서의 default값
 BH1750_DEV_ADDR = 0x23
 '''
  측정 모드들
